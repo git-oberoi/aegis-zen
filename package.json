@@ -1,0 +1,17 @@
+{
+  "name": "aegis-zen-monorepo",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "install-all": "npm install --prefix frontend && npm install --prefix backend",
+    "frontend": "npm --prefix frontend run dev",
+    "backend": "npm --prefix backend run start",
+    "dev": "npm run frontend & npm run backend",
+    "build": "npm run install-all && npm --prefix frontend run build",
+    "start": "node backend/server.js"
+  },
+  "dependencies": {
+    "all": "^0.0.0"
+  }
+}
