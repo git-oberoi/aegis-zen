@@ -25,15 +25,18 @@ import {
   User,
   Bell,
   Play,
-  ArrowLeft
+  ArrowLeft,
+  Shield
 } from 'lucide-react';
 import { ProductivityAgent } from './gemini';
+import { DEMO_USERNAME, DEMO_TASKS, DEMO_EVENTS, DEMO_HABITS, DEMO_BRIEFING, DEMO_NOTIFICATIONS } from './demoData';
+import { INITIAL_USER_TASKS, INITIAL_USER_EVENTS, INITIAL_USER_HABITS, INITIAL_USER_USERNAME } from './userData';
 import DailyBriefing from './components/DailyBriefing';
 import CognitiveLoad from './components/CognitiveLoad';
 import SmartRecovery from './components/SmartRecovery';
 import WeeklyOptimizer from './components/WeeklyOptimizer';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || (import.meta.env.PROD ? '' : 'http://localhost:5000');
 
 // Helper to format date to YYYY-MM-DD
 const formatDateStr = (date) => {
@@ -63,87 +66,114 @@ const formatTimeStr = (isoString) => {
   }
 };
 
-const DEFAULT_TASKS = [
-  {
-    id: 'task_default_1',
-    title: 'Deploy project backend to Google Cloud Run',
-    priority: 'high',
-    category: 'Work',
-    dueDate: formatDateStr(new Date()),
-    duration: 60,
-    status: 'in_progress',
-    cognitiveLoad: 5,
-    subtasks: [
-      { id: 'sub_def_1', title: 'Verify .env setup secrets', completed: true },
-      { id: 'sub_def_2', title: 'Build production client bundle locally', completed: false }
-    ]
-  },
-  {
-    id: 'task_default_2',
-    title: 'Design final slides for CN-Vibe2Ship pitch deck',
-    priority: 'high',
-    category: 'Study',
-    dueDate: formatDateStr(new Date(Date.now() + 86400000)), // Tomorrow
-    duration: 90,
-    status: 'todo',
-    cognitiveLoad: 4,
-    subtasks: []
-  },
-  {
-    id: 'task_default_3',
-    title: 'Reflect and plan day in morning journal',
-    priority: 'low',
-    category: 'Personal',
-    dueDate: formatDateStr(new Date()),
-    duration: 15,
-    status: 'completed',
-    cognitiveLoad: 1,
-    subtasks: []
-  },
-  {
-    id: 'task_default_4',
-    title: 'Mindful review of submission steps on BlockseBlock dashboard',
-    priority: 'low',
-    category: 'Work',
-    dueDate: formatDateStr(new Date()),
-    duration: 15,
-    status: 'completed',
-    cognitiveLoad: 2,
-    subtasks: []
+// Clean query parameters and reset localStorage if ?reset=true is provided
+if (typeof window !== 'undefined') {
+  const urlParams = new URLSearchParams(window.location.search);
+  if (urlParams.get('reset') === 'true') {
+    localStorage.clear();
+    const url = new URL(window.location.href);
+    url.searchParams.delete('reset');
+    window.history.replaceState({}, '', url.pathname + url.search);
   }
-];
-
-const DEFAULT_EVENTS = [
-  {
-    id: 'event_default_1',
-    taskId: 'task_default_1',
-    title: 'Deploy to Cloud Run',
-    startTime: `${formatDateStr(new Date())}T12:00:00`,
-    duration: 60
-  }
-];
-
-const DEFAULT_HABITS = [
-  { id: 'h_1', title: '1-min Breathing Break', streak: 6, history: [formatDateStr(new Date(Date.now() - 86400000))] },
-  { id: 'h_2', title: 'Plan Day in Morning', streak: 14, history: [formatDateStr(new Date()), formatDateStr(new Date(Date.now() - 86400000))] },
-  { id: 'h_3', title: 'Mindful Focus Block (45m)', streak: 4, history: [] }
-];
+}
 
 function App() {
   // App states
   const [apiKey, setApiKey] = useState(() => localStorage.getItem('vibe_gemini_key') || '');
-  const [tasks, setTasks] = useState(() => {
-    const saved = localStorage.getItem('tasks');
-    return saved ? JSON.parse(saved) : DEFAULT_TASKS;
+  const [isOnboarded, setIsOnboarded] = useState(() => localStorage.getItem('aegis_onboarded') === 'true');
+  const [isDemoMode, setIsDemoMode] = useState(() => {
+    const userExists = localStorage.getItem('aegis_user_exists') === 'true';
+    if (userExists) {
+      const savedMode = localStorage.getItem('aegis_demo_mode');
+      return savedMode === 'true';
+    }
+    return true; // Default to Demo Mode if user does not exist
   });
-  const [events, setEvents] = useState(() => {
-    const saved = localStorage.getItem('events');
-    return saved ? JSON.parse(saved) : DEFAULT_EVENTS;
+
+  const [username, setUsername] = useState(() => {
+    const userExists = localStorage.getItem('aegis_user_exists') === 'true';
+    if (!userExists) return DEMO_USERNAME;
+    return localStorage.getItem('user_username') || INITIAL_USER_USERNAME;
   });
-  const [habits, setHabits] = useState(() => {
-    const saved = localStorage.getItem('habits');
-    return saved ? JSON.parse(saved) : DEFAULT_HABITS;
-  });
+
+  const [tasks, setTasks] = useState([]);
+  const [events, setEvents] = useState([]);
+  const [habits, setHabits] = useState([]);
+
+  const isInitialized = useRef(false);
+
+  // Sync workspace data based on Demo Mode / User Mode
+  useEffect(() => {
+    localStorage.setItem('aegis_demo_mode', isDemoMode ? 'true' : 'false');
+    if (isDemoMode) {
+      const savedTasks = localStorage.getItem('demo_tasks');
+      const savedEvents = localStorage.getItem('demo_events');
+      const savedHabits = localStorage.getItem('demo_habits');
+      setTasks(savedTasks ? JSON.parse(savedTasks) : DEMO_TASKS);
+      setEvents(savedEvents ? JSON.parse(savedEvents) : DEMO_EVENTS);
+      setHabits(savedHabits ? JSON.parse(savedHabits) : DEMO_HABITS);
+      setUsername(DEMO_USERNAME);
+    } else {
+      const savedTasks = localStorage.getItem('user_tasks');
+      const savedEvents = localStorage.getItem('user_events');
+      const savedHabits = localStorage.getItem('user_habits');
+      const savedUsername = localStorage.getItem('user_username');
+      setTasks(savedTasks ? JSON.parse(savedTasks) : INITIAL_USER_TASKS);
+      setEvents(savedEvents ? JSON.parse(savedEvents) : INITIAL_USER_EVENTS);
+      setHabits(savedHabits ? JSON.parse(savedHabits) : INITIAL_USER_HABITS);
+      setUsername(savedUsername || INITIAL_USER_USERNAME);
+    }
+    isInitialized.current = true;
+  }, [isDemoMode]);
+
+  // Persist states to appropriate local storage namespaces
+  useEffect(() => {
+    if (!isInitialized.current) return;
+    if (isDemoMode) {
+      localStorage.setItem('demo_tasks', JSON.stringify(tasks));
+    } else {
+      localStorage.setItem('user_tasks', JSON.stringify(tasks));
+      if (tasks.length > 0) {
+        localStorage.setItem('aegis_user_exists', 'true');
+      }
+    }
+  }, [tasks, isDemoMode]);
+
+  useEffect(() => {
+    if (!isInitialized.current) return;
+    if (isDemoMode) {
+      localStorage.setItem('demo_events', JSON.stringify(events));
+    } else {
+      localStorage.setItem('user_events', JSON.stringify(events));
+    }
+  }, [events, isDemoMode]);
+
+  useEffect(() => {
+    if (!isInitialized.current) return;
+    if (isDemoMode) {
+      localStorage.setItem('demo_habits', JSON.stringify(habits));
+    } else {
+      localStorage.setItem('user_habits', JSON.stringify(habits));
+    }
+  }, [habits, isDemoMode]);
+
+  const loadDemoModeData = () => {
+    localStorage.setItem('demo_tasks', JSON.stringify(DEMO_TASKS));
+    localStorage.setItem('demo_events', JSON.stringify(DEMO_EVENTS));
+    localStorage.setItem('demo_habits', JSON.stringify(DEMO_HABITS));
+    setTasks(DEMO_TASKS);
+    setEvents(DEMO_EVENTS);
+    setHabits(DEMO_HABITS);
+    setUsername(DEMO_USERNAME);
+  };
+
+  const handleUsernameChange = (newVal) => {
+    setUsername(newVal);
+    if (!isDemoMode) {
+      localStorage.setItem('user_username', newVal);
+      localStorage.setItem('aegis_user_exists', 'true');
+    }
+  };
 
   const [activeTab, setActiveTab] = useState('dashboard');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -229,6 +259,51 @@ function App() {
   const fetchTaskEstimation = async (title, desc) => {
     if (!title.trim()) return;
     setIsEstimating(true);
+    if (isDemoMode) {
+      setTimeout(() => {
+        const combined = (title + " " + desc).toLowerCase();
+        let estimatedMinutes = 45;
+        let complexity = "Low";
+        let cognitiveLoad = 2;
+
+        if (combined.includes("deploy") || combined.includes("deployment") || combined.includes("production") || combined.includes("infrastructure")) {
+          estimatedMinutes = 60;
+          complexity = "High";
+          cognitiveLoad = 4;
+        } else if (combined.includes("exam") || combined.includes("test") || combined.includes("certification") || combined.includes("study") || combined.includes("learn")) {
+          estimatedMinutes = 120;
+          complexity = "Medium";
+          cognitiveLoad = 4;
+        } else if (combined.includes("review") || combined.includes("architecture") || combined.includes("presentation")) {
+          estimatedMinutes = 90;
+          complexity = "Medium";
+          cognitiveLoad = 3;
+        } else if (combined.includes("gym") || combined.includes("workout") || combined.includes("exercise") || combined.includes("breathing")) {
+          estimatedMinutes = 30;
+          complexity = "Low";
+          cognitiveLoad = 1;
+        }
+
+        setEstimatedMinutes(estimatedMinutes);
+        setEstimatedComplexity(complexity);
+        setEstimatedCognitiveLoad(cognitiveLoad);
+        setEstimatedConfidence(85);
+
+        const newLog = {
+          id: 'est_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5),
+          title,
+          description: desc,
+          estimatedMinutes,
+          complexity,
+          cognitiveLoad,
+          confidence: 85,
+          timestamp: new Date().toISOString()
+        };
+        setEstimationHistory(prev => [newLog, ...prev]);
+        setIsEstimating(false);
+      }, 500);
+      return;
+    }
     try {
       const response = await fetch(API_BASE_URL + '/api/estimate-task', {
         method: 'POST',
@@ -280,6 +355,46 @@ function App() {
     setNextRecLoading(true);
     setNextRecError('');
     setNextRecommendation(null);
+    if (isDemoMode) {
+      const pending = tasks.filter(t => t.status !== 'completed');
+      if (pending.length === 0) {
+        setNextRecommendation({
+          task: "Practice 1-Minute Box Breathing",
+          reason: [
+            "All pending tasks are completed",
+            "Restore cognitive balance",
+            "Clear mental pathways for tomorrow"
+          ],
+          estimatedDuration: 15
+        });
+      } else {
+        const scored = pending.map(t => {
+          let score = 0;
+          if (t.priority === 'high') score += 100;
+          else if (t.priority === 'medium') score += 50;
+          else score += 10;
+
+          const taskLoad = t.cognitiveLoad || 3;
+          const loadDiff = Math.abs(taskLoad - userEnergyLevel);
+          score += (5 - loadDiff) * 15;
+
+          return { task: t, score };
+        });
+        scored.sort((a, b) => b.score - a.score);
+        const bestTask = scored[0].task;
+        setNextRecommendation({
+          task: bestTask.title,
+          reason: [
+            bestTask.priority === 'high' ? "Highest pending urgency priority" : "Good task to progress flow balance",
+            `Perfect load match for your ⚡ ${userEnergyLevel}/5 current energy`,
+            "Estimated duration fits nicely in a focus block"
+          ],
+          estimatedDuration: bestTask.duration || 45
+        });
+      }
+      setNextRecLoading(false);
+      return;
+    }
     try {
       const response = await fetch(API_BASE_URL + '/api/recommend-next', {
         method: 'POST',
@@ -350,6 +465,12 @@ function App() {
   };
 
   const fetchDailyBriefing = async () => {
+    if (isDemoMode) {
+      setBriefingData(DEMO_BRIEFING);
+      setBriefingLoading(false);
+      setBriefingError('');
+      return;
+    }
     setBriefingLoading(true);
     setBriefingError('');
     try {
@@ -363,7 +484,8 @@ function App() {
           tasks,
           habits,
           history,
-          selectedDate
+          selectedDate,
+          username
         })
       });
       const data = await response.json();
@@ -382,9 +504,23 @@ function App() {
 
   useEffect(() => {
     fetchDailyBriefing();
-  }, [selectedDate, apiKey]);
+  }, [selectedDate, apiKey, username, isDemoMode]);
 
   const fetchCognitiveLoadData = async () => {
+    if (isDemoMode) {
+      setCognitiveLoadData({
+        cognitiveLoad: 45,
+        level: 'Moderate',
+        explanation: 'Your schedule shows a moderate cognitive load of 45/100. This is balanced, but you should take micro-breaks between your tasks.',
+        recommendations: [
+          'Take a breathing break after finishing your landing page redesign.',
+          'Review AI task duration recommendations.'
+        ]
+      });
+      setCogLoadLoading(false);
+      setCogLoadError('');
+      return;
+    }
     setCogLoadLoading(true);
     setCogLoadError('');
     try {
@@ -412,12 +548,23 @@ function App() {
 
   useEffect(() => {
     fetchCognitiveLoadData();
-  }, [tasks, events, apiKey]);
+  }, [tasks, events, apiKey, isDemoMode]);
 
   const handleFetchRecoveryPlan = async (missedTaskTitle) => {
     setRecoveryLoading(true);
     setRecoveryError('');
     setRecoveryData(null);
+    if (isDemoMode) {
+      setRecoveryData({
+        missedTask: missedTaskTitle,
+        adjustments: [
+          `Postpone low priority habits to tomorrow.`,
+          `Re-allocate 30 minutes to review tomorrow's planned tasks.`
+        ]
+      });
+      setRecoveryLoading(false);
+      return;
+    }
     try {
       const response = await fetch(API_BASE_URL + '/api/recovery', {
         method: 'POST',
@@ -491,6 +638,22 @@ function App() {
     setWeeklyOptLoading(true);
     setWeeklyOptError('');
     setWeeklyOptData(null);
+    if (isDemoMode) {
+      setWeeklyOptData({
+        weeklyPlanSummary: "Focus on finalizing the landing page first, then review AI recommendations. Lower priority tasks have been scheduled for late week slots to maximize early week cognitive focus.",
+        riskAssessment: "Risk: Over-allocating work on landing page could result in moderate burnout. Mitigate with regular breaks.",
+        priorityChanges: [
+          "Set landing page task to High priority",
+          "Postpone admin tasks to Friday"
+        ],
+        focusList: ["Aegis Zen landing page redesign", "AI suggestions review"],
+        postponeList: ["Smart planner scheduling review"],
+        ignoreList: ["General sorting", "Admin review"]
+      });
+      setWeeklyOptLoading(false);
+      setWeeklyOptError('');
+      return;
+    }
     try {
       const response = await fetch(API_BASE_URL + '/api/optimize-week', {
         method: 'POST',
@@ -804,6 +967,33 @@ function App() {
   useEffect(() => {
     const fetchBurnoutStats = async () => {
       setBurnoutLoading(true);
+      if (isDemoMode) {
+        setBurnoutData({
+          burnoutScore: 28,
+          category: "Healthy",
+          metricsSummary: {
+            workloadChange: "Your workload has increased by 12% this week.",
+            cognitiveStress: "Your active cognitive demand is at 9 focus points.",
+            completionRatio: "You have completed 75% of registered tasks."
+          },
+          recommendations: [
+            "You are maintaining a balanced workflow. Continue practicing mindful focus."
+          ],
+          trendData: [
+            { day: "Mon", score: 25 },
+            { day: "Tue", score: 32 },
+            { day: "Wed", score: 28 },
+            { day: "Thu", score: 35 },
+            { day: "Fri", score: 30 },
+            { day: "Sat", score: 22 },
+            { day: "Sun", score: 28 }
+          ],
+          mindfulExplanation: "Aegis has analyzed your focus cycles. With an active cognitive demand of 9 units and 0 overdue focus blocks, your burnout risk is Healthy. I suggest maintaining this pace."
+        });
+        setBurnoutLoading(false);
+        setBurnoutError('');
+        return;
+      }
       try {
         const response = await fetch(API_BASE_URL + '/api/burnout', {
           method: 'POST',
@@ -830,13 +1020,29 @@ function App() {
     };
 
     fetchBurnoutStats();
-  }, [tasks, events, habits, apiKey]);
+  }, [tasks, events, habits, apiKey, isDemoMode]);
 
   // Deadline Survival Mode Effect Integration
   useEffect(() => {
     const fetchSurvivalMetrics = async () => {
       if (!survivalModeActive) return;
       setSurvivalLoading(true);
+      if (isDemoMode) {
+        const criticalTasks = tasks.filter(t => t.priority === 'high' && t.status !== 'completed');
+        setSurvivalData({
+          completionProbability: 92,
+          remainingWorkMinutes: criticalTasks.reduce((acc, t) => acc + (t.duration || 30), 0),
+          recommendedActions: [
+            "Hide low-value and easy flow tasks from your workspace to clear mental noise.",
+            "Pause habit checks: Aegis has locked habits to avoid splitting your focus.",
+            "Compress rest timers: Shift your focus block breaks to 5-minute segments.",
+            "Practice standard box breathing to suppress rising deadline panic."
+          ],
+          mindfulSurvivalExplanation: `Emergency Survival Mode Active. Aegis has filtered your display to isolate ${criticalTasks.length} critical deadline task(s). Keep focus narrow.`
+        });
+        setSurvivalLoading(false);
+        return;
+      }
       try {
         const response = await fetch(API_BASE_URL + '/api/survival', {
           method: 'POST',
@@ -859,7 +1065,7 @@ function App() {
     };
 
     fetchSurvivalMetrics();
-  }, [tasks, events, survivalModeActive, apiKey]);
+  }, [tasks, events, survivalModeActive, apiKey, isDemoMode]);
 
   // Initialize companion agent
   useEffect(() => {
@@ -963,6 +1169,25 @@ function App() {
     setMessages(prev => [...prev, userMsg]);
     setChatInput('');
     setIsThinking(true);
+
+    if (isDemoMode) {
+      setTimeout(() => {
+        setIsThinking(false);
+        const demoReplyText = `As your Aegis Productivity Companion, I am here to guide your focus. 
+
+Your current list contains 4 tasks, with a balanced workload of 9 energy units. I recommend focusing on **Finish Aegis Zen landing page redesign** first. 
+
+Would you like to take a 1-minute box breathing break to ground your attention?`;
+        const assistantMsg = {
+          sender: 'assistant',
+          text: demoReplyText,
+          timestamp: new Date()
+        };
+        setMessages(prev => [...prev, assistantMsg]);
+        speakText(demoReplyText);
+      }, 1200);
+      return;
+    }
 
     if (!apiKey) {
       setIsThinking(false);
@@ -1206,16 +1431,50 @@ function App() {
 
   // AI Planner Integration Request
   const handleGenerateAIPlan = async () => {
-    if (!apiKey) {
-      alert("Please configure your Google AI Studio API Key in settings first.");
-      setActiveTab('settings');
-      return;
-    }
-
     setPlannerLoading(true);
     setPlannerError('');
     setPlannerSchedule([]);
     setPlannerSummary('');
+
+    if (isDemoMode) {
+      const scheduledList = [
+        {
+          taskId: 'task_demo_1',
+          title: 'Finish Aegis Zen landing page redesign',
+          startTime: `${selectedDate}T14:00:00`,
+          endTime: `${selectedDate}T15:00:00`,
+          type: 'task',
+          duration: 60
+        },
+        {
+          taskId: '',
+          title: 'Rest & Breathing Break',
+          startTime: `${selectedDate}T15:00:00`,
+          endTime: `${selectedDate}T15:15:00`,
+          type: 'break',
+          duration: 15
+        },
+        {
+          taskId: 'task_demo_4',
+          title: 'Plan tomorrow\'s focus schedule with Aegis smart planner',
+          startTime: `${selectedDate}T15:15:00`,
+          endTime: `${selectedDate}T15:35:00`,
+          type: 'task',
+          duration: 20
+        }
+      ];
+      setPlannerSchedule(scheduledList);
+      setPlannerSummary('Aegis has aligned today\'s plan to optimize your focus hours. Start with the landing page design at 2:00 PM.');
+      setPlannerLoading(false);
+      return;
+    }
+
+    if (!apiKey) {
+      alert("Please configure your Google AI Studio API Key in settings first.");
+      setActiveTab('settings');
+      setPlannerLoading(false);
+      return;
+    }
 
     const pendingTasks = tasks.filter(t =>
       t.status !== 'completed' &&
@@ -1305,6 +1564,66 @@ function App() {
       error: ''
     }));
 
+    if (isDemoMode) {
+      setTimeout(() => {
+        const current = new Date();
+        const recommendations = [];
+
+        events.forEach(event => {
+          if (event.startTime.startsWith(selectedDate)) {
+            const start = new Date(event.startTime);
+            const end = new Date(start.getTime() + (event.duration || 30) * 60 * 1000);
+            
+            if (end < current) {
+              const task = tasks.find(t => t.id === event.taskId);
+              if (task && task.status !== 'completed') {
+                const isLate = current.getHours() >= 18;
+                if (isLate) {
+                  const tomorrow = new Date(current);
+                  tomorrow.setDate(tomorrow.getDate() + 1);
+                  const tomorrowStr = formatDateStr(tomorrow);
+                  
+                  recommendations.push({
+                    type: "move",
+                    taskId: task.id,
+                    taskTitle: task.title,
+                    suggestionText: `Move '${task.title}' to tomorrow morning, as the day is winding down.`,
+                    action: {
+                      newDueDate: tomorrowStr,
+                      newStartTime: `${tomorrowStr}T09:30:00`
+                    }
+                  });
+                } else {
+                  const newStart = new Date(current.getTime() + 15 * 60 * 1000);
+                  const offset = newStart.getTimezoneOffset();
+                  const localDate = new Date(newStart.getTime() - (offset * 60 * 1000));
+                  const newStartStr = localDate.toISOString().split('.')[0];
+                  
+                  recommendations.push({
+                    type: "delay",
+                    taskId: task.id,
+                    taskTitle: task.title,
+                    suggestionText: `Delay '${task.title}' to start at ${newStart.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}.`,
+                    action: {
+                      newStartTime: newStartStr
+                    }
+                  });
+                }
+              }
+            }
+          }
+        });
+
+        setRescheduleNotification(prev => ({
+          ...prev,
+          loading: false,
+          recommendations: recommendations,
+          explanation: "I detected overdue focus blocks. I recommend drifting them to open slots or moving them to tomorrow morning so you can rest tonight."
+        }));
+      }, 500);
+      return;
+    }
+
     try {
       const response = await fetch(API_BASE_URL + '/api/reschedule', {
         method: 'POST',
@@ -1384,11 +1703,48 @@ function App() {
     alert("Rescheduling updates applied! Your daily timeline and history logs have been updated.");
   };
 
-  // Trigger Future Self Projections calculations
   const handlePredictSimulation = async () => {
     setSimulationLoading(true);
     setSimulationError('');
     setSimulationData(null);
+
+    if (isDemoMode) {
+      setTimeout(() => {
+        setSimulationData({
+          scenarioA: {
+            title: "Scenario A: Aegis Recommended Workflow",
+            completionProbability: 86,
+            stressLevel: 22,
+            goalSuccessRate: 89,
+            narrativeInsight: "Aegis advises dynamic rescheduling, targeted focus blocks, and box breathing sequences. Stress levels decrease drastically, timeline goal achievements climb, and focus completes ahead of exhaustion boundaries."
+          },
+          scenarioB: {
+            title: "Scenario B: Maintain Current Pace",
+            completionProbability: 65,
+            stressLevel: 55,
+            goalSuccessRate: 60,
+            narrativeInsight: "Continuing at your current pace is stable. You will complete key responsibilities, but trailing tasks will slowly overflow into evenings, keeping stress at a moderate plateau."
+          },
+          scenarioC: {
+            title: "Scenario C: Increase Intentional Focus by 20%",
+            completionProbability: 78,
+            stressLevel: 41,
+            goalSuccessRate: 75,
+            narrativeInsight: "By raising concentration efforts slightly (e.g., locking notifications, adding 15m of daily planning), workloads clear ahead of deadlines. Your stress index drops, and goal success climbs."
+          },
+          scenarioD: {
+            title: "Scenario D: Allow Deadlines to Slip",
+            completionProbability: 29,
+            stressLevel: 80,
+            goalSuccessRate: 18,
+            narrativeInsight: "Neglecting planned time boxes causes focus logs to cascade. Missed items escalate cognitive debt, forcing late-night survival sessions. Stress levels spike to critical alerts."
+          },
+          mindfulCoachAdvice: "Aegis highly advises stepping into Scenario A (Aegis Recommended Workflow). It optimizes your cognitive energy budget, locking completion probabilities at 86% while dropping stress levels to 22%."
+        });
+        setSimulationLoading(false);
+      }, 600);
+      return;
+    }
 
     try {
       const response = await fetch(API_BASE_URL + '/api/simulate', {
@@ -1414,7 +1770,6 @@ function App() {
     }
   };
 
-  // Trigger Inbox to Action Extractor
   const handleExtractInbox = async (e) => {
     e.preventDefault();
     if (!inboxText.trim()) return;
@@ -1422,6 +1777,56 @@ function App() {
     setInboxLoading(true);
     setInboxError('');
     setInboxResult(null);
+
+    if (isDemoMode) {
+      setTimeout(() => {
+        const lowerText = inboxText.toLowerCase();
+        let title = "Process Pasted Memo Details";
+        let priority = "medium";
+        let category = "Work";
+        let dueDate = formatDateStr(new Date(Date.now() + 86400000));
+
+        if (lowerText.includes("interview") || lowerText.includes("review")) {
+          title = "Technical architecture review";
+          priority = "high";
+          category = "Study";
+        } else if (lowerText.includes("meeting") || lowerText.includes("sync")) {
+          title = "Attend team sync meeting";
+          category = "Work";
+        } else if (lowerText.includes("gym") || lowerText.includes("workout") || lowerText.includes("exercise")) {
+          title = "Gym session and training";
+          category = "Health";
+          priority = "low";
+        } else if (lowerText.includes("bill") || lowerText.includes("rent") || lowerText.includes("pay")) {
+          title = "Process outstanding invoices";
+          category = "Finance";
+          priority = "high";
+        }
+
+        const wordMatch = inboxText.match(/([A-Z][a-z]+)\s+review/);
+        if (wordMatch) {
+          title = `${wordMatch[1]} Review Preparation`;
+        } else if (inboxText.trim().length > 5) {
+          title = inboxText.trim().substring(0, 45) + (inboxText.trim().length > 45 ? "..." : "");
+        }
+
+        setInboxResult({
+          task: { title, priority, category, dueDate, cognitiveLoad: priority === 'high' ? 4 : 2 },
+          subtasks: [
+            { title: "Review past notes and calendar logs related to this event" },
+            { title: "Prepare specific checklists and resource requirements" },
+            { title: "Set aside 30 minutes of uninterrupted focus review" }
+          ],
+          estimated_hours: priority === 'high' ? 2.5 : 1.5,
+          suggested_schedule: {
+            startTime: `${dueDate}T10:00:00`,
+            endTime: `${dueDate}T12:00:00`
+          }
+        });
+        setInboxLoading(false);
+      }, 500);
+      return;
+    }
 
     try {
       const response = await fetch(API_BASE_URL + '/api/inbox-action', {
@@ -1500,6 +1905,57 @@ function App() {
     setBrainDumpLoading(true);
     setBrainDumpError('');
     setBrainDumpResult(null);
+
+    if (isDemoMode) {
+      setTimeout(() => {
+        const goals = [];
+        const tasks = [];
+        const deadlines = [];
+        const risks = [];
+        const lowerText = brainDumpText.toLowerCase();
+
+        const broadridgeDate = formatDateStr(new Date(Date.now() + 86400000));
+        const july2Match = lowerText.includes("july 2") || lowerText.includes("tomorrow");
+        const june30Match = lowerText.includes("june 30") || lowerText.includes("friday");
+
+        if (lowerText.includes("integration test") || lowerText.includes("exam") || lowerText.includes("test")) {
+          const d = july2Match ? formatDateStr(new Date(Date.now() + 86400000)) : formatDateStr(new Date(Date.now() + 172800000));
+          tasks.push({ title: "Revise system integration test concepts", priority: "high", category: "Study", dueDate: d, duration: 180, cognitiveLoad: 5 });
+          deadlines.push({ title: "Integration Test Target Date", date: d });
+        }
+
+        if (lowerText.includes("deployment") || lowerText.includes("hackathon") || lowerText.includes("publish")) {
+          const d = june30Match ? formatDateStr(new Date(Date.now() + 172800000)) : formatDateStr(new Date(Date.now() + 86400000));
+          tasks.push({ title: "Complete project deployment setup", priority: "high", category: "Work", dueDate: d, duration: 120, cognitiveLoad: 4 });
+          deadlines.push({ title: "Project Deployment Deadline", date: d });
+        }
+
+        if (lowerText.includes("review") || lowerText.includes("architecture") || lowerText.includes("presentation")) {
+          tasks.push({ title: "Prepare architecture review slides", priority: "high", category: "Study", dueDate: broadridgeDate, duration: 90, cognitiveLoad: 4 });
+        }
+
+        if (lowerText.includes("gym") || lowerText.includes("workout") || lowerText.includes("exercise")) {
+          goals.push({ title: "Exercise regularly and keep active streaks", category: "Health" });
+        }
+
+        if (tasks.length === 0) {
+          tasks.push({ title: brainDumpText.trim().substring(0, 45) + (brainDumpText.trim().length > 45 ? "..." : ""), priority: "medium", category: "Work", dueDate: formatDateStr(new Date(Date.now() + 86400000)), duration: 60, cognitiveLoad: 3 });
+        }
+        if (goals.length === 0) {
+          goals.push({ title: "Align daily schedules with 15 cognitive load points cap", category: "Personal" });
+        }
+
+        const estimatedWorkloadHours = tasks.reduce((acc, t) => acc + (t.duration / 60), 0);
+        risks.push(estimatedWorkloadHours > 5
+          ? "Overlapping focus tasks will create cognitive load spikes. Aegis advises scheduling 1-minute box breathing pauses between study sessions."
+          : "Workflow is balanced. Maintain daily streaks."
+        );
+
+        setBrainDumpResult({ goals, tasks, deadlines, estimatedWorkloadHours, risks });
+        setBrainDumpLoading(false);
+      }, 600);
+      return;
+    }
 
     try {
       const response = await fetch(API_BASE_URL + '/api/braindump', {
@@ -1830,6 +2286,9 @@ function App() {
       });
     }
 
+    if (isDemoMode) {
+      list.push(...DEMO_NOTIFICATIONS);
+    }
     return list;
   };
 
@@ -1837,6 +2296,140 @@ function App() {
 
   return (
     <div className="app-container">
+      {/* Onboarding / Landing Screen */}
+      {!isOnboarded && (
+        <div className="onboarding-overlay" style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          width: '100vw',
+          height: '100vh',
+          background: 'radial-gradient(circle at center, #0f172a 0%, #020617 100%)',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 9999,
+          padding: '24px',
+          boxSizing: 'border-box',
+          overflowY: 'auto'
+        }}>
+          <div style={{
+            maxWidth: '480px',
+            width: '100%',
+            background: 'rgba(15, 23, 42, 0.45)',
+            backdropFilter: 'blur(32px)',
+            border: '1px solid rgba(45, 212, 191, 0.15)',
+            borderRadius: '24px',
+            padding: '40px 32px',
+            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 40px rgba(45, 212, 191, 0.05)',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            textAlign: 'center',
+            gap: '30px',
+            boxSizing: 'border-box'
+          }}>
+            {/* Logo Brand */}
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
+              <div style={{
+                width: '64px',
+                height: '64px',
+                borderRadius: '20px',
+                background: 'linear-gradient(135deg, #2dd4bf 0%, #7c3aed 100%)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                boxShadow: '0 0 30px rgba(45, 212, 191, 0.3)'
+              }}>
+                <Shield style={{ width: '28px', height: '28px', color: '#fff' }} />
+              </div>
+              <h1 style={{
+                fontSize: '32px',
+                fontWeight: 800,
+                color: '#fff',
+                fontFamily: 'var(--font-title)',
+                letterSpacing: '1px',
+                margin: '12px 0 0 0',
+                background: 'linear-gradient(to right, #2dd4bf, #a78bfa)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent'
+              }}>AEGIS ZEN</h1>
+              <p style={{
+                fontSize: '14px',
+                color: '#94a3b8',
+                fontWeight: 500,
+                margin: '4px 0 0 0',
+                letterSpacing: '0.5px'
+              }}>Your AI Focus Operating System</p>
+            </div>
+
+            {/* Checklist */}
+            <div style={{
+              width: '100%',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '14px',
+              textAlign: 'left',
+              background: 'rgba(255, 255, 255, 0.015)',
+              border: '1px solid rgba(255, 255, 255, 0.04)',
+              borderRadius: '16px',
+              padding: '20px 24px',
+              boxSizing: 'border-box'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <Check style={{ color: '#2dd4bf', width: '18px', height: '18px', flexShrink: 0 }} />
+                <span style={{ fontSize: '13px', color: '#e2e8f0', fontWeight: 500 }}>AI Daily Briefing</span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <Check style={{ color: '#2dd4bf', width: '18px', height: '18px', flexShrink: 0 }} />
+                <span style={{ fontSize: '13px', color: '#e2e8f0', fontWeight: 500 }}>Brain Dump → Action Engine</span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <Check style={{ color: '#2dd4bf', width: '18px', height: '18px', flexShrink: 0 }} />
+                <span style={{ fontSize: '13px', color: '#e2e8f0', fontWeight: 500 }}>Smart Planner</span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <Check style={{ color: '#2dd4bf', width: '18px', height: '18px', flexShrink: 0 }} />
+                <span style={{ fontSize: '13px', color: '#e2e8f0', fontWeight: 500 }}>Focus Sessions</span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <Check style={{ color: '#2dd4bf', width: '18px', height: '18px', flexShrink: 0 }} />
+                <span style={{ fontSize: '13px', color: '#e2e8f0', fontWeight: 500 }}>Habit Tracking</span>
+              </div>
+            </div>
+
+            {/* Actions */}
+            <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <button
+                onClick={() => {
+                  localStorage.setItem('aegis_onboarded', 'true');
+                  setIsOnboarded(true);
+                  setIsDemoMode(true);
+                  loadDemoModeData();
+                }}
+                className="btn-primary"
+                style={{
+                  width: '100%',
+                  padding: '14px',
+                  borderRadius: '12px',
+                  fontSize: '14px',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  border: 'none',
+                  background: 'linear-gradient(135deg, #2dd4bf 0%, #0d9488 100%)',
+                  boxShadow: '0 0 20px rgba(45, 212, 191, 0.25)',
+                  transition: 'all 0.2s',
+                  color: '#000'
+                }}
+              >
+                Explore Demo
+              </button>
+              <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>No login required.</span>
+            </div>
+          </div>
+        </div>
+      )}
       {/* SVGs definitions */}
       <svg style={{ position: 'absolute', width: 0, height: 0 }}>
         <defs>
@@ -2151,6 +2744,25 @@ function App() {
               <Wind className="nav-item-icon" style={{ color: '#fff', width: '16px', height: '16px' }} />
             </div>
             <span className="top-header-brand-text">AEGIS ZEN</span>
+            {isDemoMode && (
+              <span style={{
+                fontSize: '9px',
+                textTransform: 'uppercase',
+                background: 'rgba(245, 158, 11, 0.15)',
+                color: '#fbbf24',
+                padding: '3px 8px',
+                borderRadius: '6px',
+                fontWeight: 'bold',
+                letterSpacing: '0.5px',
+                border: '1px solid rgba(245, 158, 11, 0.25)',
+                cursor: 'pointer'
+              }}
+              onClick={() => setIsDemoMode(false)}
+              title="Click to switch to Real Mode"
+              >
+                Demo Mode
+              </span>
+            )}
           </div>
 
           {/* Profile & Notifications */}
@@ -2475,9 +3087,25 @@ function App() {
                   <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'linear-gradient(135deg, #2dd4bf 0%, #7c3aed 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid rgba(255,255,255,0.1)' }}>
                     <User style={{ width: '16px', height: '16px', color: '#fff' }} />
                   </div>
-                  <div>
-                    <h4 style={{ fontSize: '13px', fontWeight: 700, color: '#fff', margin: 0 }}>Shivam</h4>
-                    <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>shivam@aegis.zen</span>
+                  <div style={{ flexGrow: 1 }}>
+                    {isDemoMode ? (
+                      <>
+                        <h4 style={{ fontSize: '13px', fontWeight: 700, color: '#fff', margin: 0 }}>{username}</h4>
+                        <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>demo@aegis.zen</span>
+                      </>
+                    ) : (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                        <input
+                          type="text"
+                          value={username}
+                          onChange={(e) => handleUsernameChange(e.target.value)}
+                          className="input-glass"
+                          style={{ fontSize: '12px', padding: '4px 8px', width: '100%', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(0,0,0,0.2)', color: '#fff', borderRadius: '6px' }}
+                          placeholder="Your Name..."
+                        />
+                        <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>user@aegis.zen</span>
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -2626,7 +3254,7 @@ function App() {
 
                   <form onSubmit={handleProcessBrainDump} style={{ display: 'flex', flexDirection: 'column', gap: '10px', flexGrow: 1 }}>
                     <textarea
-                      placeholder="Paste raw text here (e.g. 'I have a React exam on July 2. Hackathon deadline June 30. Need to prepare for Broadridge interview. Need to go gym regularly.')"
+                      placeholder="Paste raw text here (e.g. 'I have a system integration test tomorrow. Project deployment is due by end of the week. Need to prepare for architecture review.')"
                       value={brainDumpText}
                       onChange={(e) => setBrainDumpText(e.target.value)}
                       className="input-glass"
@@ -2879,6 +3507,12 @@ function App() {
                         </div>
                       </div>
                     </>
+                  )}
+
+                  {!burnoutData && !burnoutLoading && !burnoutError && (
+                    <div style={{ color: 'var(--text-muted)', fontSize: '12px', textAlign: 'center', padding: '16px 0' }}>
+                      No burnout index available. Add tasks to predict risk.
+                    </div>
                   )}
                 </div>
 
@@ -3384,7 +4018,7 @@ function App() {
                 </h3>
                 <form onSubmit={handleExtractInbox} style={{ display: 'flex', flexDirection: 'column', gap: '8px', flexGrow: 1, height: '100%' }}>
                   <textarea
-                    placeholder="Paste emails, messages, notes or announcements here (e.g. 'Broadridge interview on July 10')..."
+                    placeholder="Paste emails, messages, notes or announcements here (e.g. 'Technical architecture review scheduled for Friday')..."
                     value={inboxText}
                     onChange={(e) => setInboxText(e.target.value)}
                     className="input-glass"
@@ -4363,6 +4997,57 @@ function App() {
             </header>
 
             <div style={{ maxWidth: '720px', width: '100%', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '24px' }}>
+
+              {/* Card: Workspace Mode */}
+              <div className="glass-panel" style={{ padding: '28px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                <h3 style={{ fontSize: '15px', fontWeight: 700, color: '#fbbf24', fontFamily: 'var(--font-title)', display: 'flex', alignItems: 'center', gap: '8px', margin: 0 }}>
+                  <Shield style={{ width: '18px', color: '#fbbf24' }} /> Workspace Environment
+                </h3>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
+                  <div>
+                    <strong style={{ fontSize: '13px', color: '#fff', display: 'block', marginBottom: '4px' }}>Demo Mode Active</strong>
+                    <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
+                      {isDemoMode 
+                        ? 'Currently using mock productivity data for hackathon evaluation.' 
+                        : 'Using your personal persistent browser storage.'}
+                    </span>
+                  </div>
+                  <button
+                    onClick={() => setIsDemoMode(!isDemoMode)}
+                    className="action-btn-pill"
+                    style={{
+                      background: isDemoMode ? 'rgba(245, 158, 11, 0.15)' : 'rgba(255,255,255,0.03)',
+                      borderColor: isDemoMode ? 'rgba(245, 158, 11, 0.25)' : 'rgba(255,255,255,0.08)',
+                      color: isDemoMode ? '#fbbf24' : 'var(--text-muted)',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    {isDemoMode ? 'Switch to Real Mode' : 'Switch to Demo Mode'}
+                  </button>
+                </div>
+                {isDemoMode && (
+                  <button
+                    onClick={() => {
+                      localStorage.removeItem('demo_tasks');
+                      localStorage.removeItem('demo_events');
+                      localStorage.removeItem('demo_habits');
+                      loadDemoModeData();
+                      alert('Demo workspace data reset successfully.');
+                    }}
+                    className="action-btn-pill"
+                    style={{
+                      marginTop: '8px',
+                      alignSelf: 'flex-start',
+                      background: 'rgba(239, 68, 68, 0.1)',
+                      borderColor: 'rgba(239, 68, 68, 0.2)',
+                      color: '#f87171',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    Reset Demo Data
+                  </button>
+                )}
+              </div>
 
               {/* Card 1: LLM Engine (API Credentials) */}
               <div className="glass-panel" style={{ padding: '28px', display: 'flex', flexDirection: 'column', gap: '16px' }}>

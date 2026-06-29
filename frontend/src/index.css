@@ -1,42 +1,48 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
 :root {
-  --font-title: 'Outfit', 'Inter', system-ui, -apple-system, sans-serif;
+  --font-title: 'Inter', system-ui, -apple-system, sans-serif;
   --font-body: 'Inter', system-ui, -apple-system, sans-serif;
 
-  /* Color System */
-  --bg-app: radial-gradient(circle at 50% 50%, #0d131f 0%, #050811 100%);
-  --bg-surface: rgba(17, 24, 39, 0.65);
-  --bg-surface-hover: rgba(31, 41, 55, 0.8);
-  --bg-dock: rgba(10, 15, 28, 0.7);
+  /* Premium SaaS Color System */
+  --bg-app: #08090a;
+  --bg-surface: #101216;
+  --bg-surface-hover: #16181f;
+  --bg-dock: #101216;
 
-  --border-glow: rgba(6, 182, 212, 0.15);
-  --border-subtle: rgba(255, 255, 255, 0.06);
-  --border-subtle-active: rgba(255, 255, 255, 0.12);
+  --border-glow: #1c1e24;
+  --border-subtle: #1c1e24;
+  --border-subtle-active: #2d3342;
 
-  --text-main: #f9fafb;
-  --text-muted: #9ca3af;
+  --text-main: #f3f4f6;
+  --text-muted: #8e939e;
   --text-muted-dark: #4b5563;
 
-  /* Accent Glow Gradients */
-  --accent-purple: #8b5cf6;
-  --accent-cyan: #06b6d4;
-  --accent-teal: #14b8a6;
+  /* Restrained SaaS palette with Blue as the primary brand accent */
+  --accent-blue: #3b82f6;
+  --accent-blue-hover: #2563eb;
+
+  /* State Accents - flat, non-glow, professional colors */
+  --accent-purple: #a78bfa;
+  --accent-cyan: #3b82f6;
+  --accent-teal: #3b82f6;
   --accent-green: #10b981;
   --accent-amber: #f59e0b;
   --accent-red: #ef4444;
 
-  --grad-purple: linear-gradient(135deg, #a78bfa 0%, #7c3aed 100%);
-  --grad-cyan: linear-gradient(135deg, #22d3ee 0%, #0891b2 100%);
-  --grad-teal: linear-gradient(135deg, #2dd4bf 0%, #0d9488 100%);
-  --grad-green: linear-gradient(135deg, #34d399 0%, #059669 100%);
-  --grad-glass: linear-gradient(135deg, rgba(255, 255, 255, 0.04) 0%, rgba(255, 255, 255, 0.01) 100%);
+  /* Overwrite gradient variables with clean solid or subtle state colors */
+  --grad-purple: #8b5cf6;
+  --grad-cyan: #3b82f6;
+  --grad-teal: #3b82f6;
+  --grad-green: #10b981;
+  --grad-glass: #101216;
 
-  --shadow-premium: 0 10px 40px rgba(0, 0, 0, 0.5);
-  --shadow-glow-cyan: 0 0 15px rgba(6, 182, 212, 0.35);
-  --shadow-glow-teal: 0 0 20px rgba(20, 184, 166, 0.35);
+  /* Subtle, modern shadows instead of glows */
+  --shadow-premium: 0 8px 30px rgba(0, 0, 0, 0.5), 0 1px 2px rgba(0, 0, 0, 0.2);
+  --shadow-glow-cyan: none;
+  --shadow-glow-teal: none;
 
-  --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-smooth: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   --transition-breathing: all 4s linear;
 }
 
@@ -55,20 +61,18 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* Glassmorphism utility card */
+/* Premium SaaS utility card */
 .glass-panel {
   background: var(--bg-surface);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
   border: 1px solid var(--border-subtle);
-  border-radius: 20px;
+  border-radius: 16px;
   box-shadow: var(--shadow-premium);
   transition: var(--transition-smooth);
 }
 
 .glass-panel:hover {
-  border-color: rgba(6, 182, 212, 0.25);
-  box-shadow: 0 8px 32px 0 rgba(6, 182, 212, 0.05);
+  border-color: var(--border-subtle-active);
+  box-shadow: var(--shadow-premium);
 }
 
 /* App Container Layout (Full width since sidebar is removed) */
@@ -88,19 +92,19 @@ body {
   align-items: center;
   gap: 6px;
   padding: 8px 18px;
-  background: var(--bg-dock);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
+  background: rgba(16, 18, 22, 0.95);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   border: 1px solid var(--border-subtle);
-  border-radius: 32px;
+  border-radius: 16px;
   z-index: 500;
-  box-shadow: var(--shadow-premium), 0 0 25px rgba(20, 184, 166, 0.1);
+  box-shadow: var(--shadow-premium);
   transition: var(--transition-smooth);
 }
 
 .dock:hover {
-  border-color: rgba(20, 184, 166, 0.3);
-  box-shadow: var(--shadow-premium), 0 0 35px rgba(20, 184, 166, 0.15);
+  border-color: var(--border-subtle-active);
+  box-shadow: var(--shadow-premium);
 }
 
 .dock-item-btn {
@@ -113,7 +117,7 @@ body {
   color: var(--text-muted);
   cursor: pointer;
   padding: 8px 16px;
-  border-radius: 24px;
+  border-radius: 12px;
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   font-family: var(--font-body);
   gap: 4px;
@@ -130,7 +134,7 @@ body {
   width: 4px;
   height: 4px;
   border-radius: 50%;
-  background: #2dd4bf;
+  background: var(--accent-blue);
   opacity: 0;
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -150,37 +154,7 @@ body {
   font-weight: 500;
 }
 
-/* Mobile navigation bar (shown on small screens) */
-@media (max-width: 600px) {
-  .dock {
-    display: none;
-  }
-
-  .mobile-nav {
-    display: flex;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    padding: 8px 12px;
-    background: var(--bg-dock);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    align-items: center;
-    justify-content: space-between;
-    z-index: 600;
-    border-bottom: 1px solid var(--border-subtle);
-  }
-
-  .menu-btn {
-    background: none;
-    border: none;
-    color: var(--text-main);
-    font-size: 20px;
-    cursor: pointer;
-  }
-}
-
+/* Dock hover and active styles */
 .dock-item-btn:hover {
   color: var(--text-main);
   background: rgba(255, 255, 255, 0.03);
@@ -188,8 +162,8 @@ body {
 }
 
 .dock-item-btn.active {
-  color: #2dd4bf;
-  background: rgba(20, 184, 166, 0.08);
+  color: var(--accent-blue);
+  background: rgba(59, 130, 246, 0.08);
   transform: translateY(-2px);
 }
 
@@ -205,8 +179,8 @@ body {
   right: 28px;
   width: 56px;
   height: 56px;
-  border-radius: 28px;
-  background: var(--grad-teal);
+  border-radius: 50%;
+  background: #14b8a6;
   border: none;
   display: flex;
   align-items: center;
@@ -215,8 +189,8 @@ body {
   color: #fff;
   cursor: pointer;
   z-index: 400;
-  box-shadow: var(--shadow-glow-teal);
-  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), border-radius 0.3s, box-shadow 0.3s, transform 0.3s;
+  box-shadow: var(--shadow-premium);
+  transition: width 0.3s cubic-bezier(0.16, 1, 0.3, 1), border-radius 0.3s, box-shadow 0.3s, transform 0.3s;
   overflow: hidden;
   white-space: nowrap;
 }
@@ -224,7 +198,9 @@ body {
 .floating-chat-trigger:hover {
   width: 175px;
   border-radius: 28px;
-  box-shadow: 0 0 25px rgba(20, 184, 166, 0.6);
+  background: #0d9488;
+  color: #fff;
+  box-shadow: var(--shadow-premium);
   transform: translateY(-4px);
 }
 
@@ -471,11 +447,11 @@ body {
 }
 
 .action-btn-pill {
-  background: rgba(20, 184, 166, 0.15);
-  border: 1px solid rgba(20, 184, 166, 0.25);
-  color: #2dd4bf;
+  background: #16181f;
+  border: 1px solid var(--border-subtle);
+  color: var(--text-main);
   padding: 6px 14px;
-  border-radius: 9999px;
+  border-radius: 12px;
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
@@ -483,8 +459,9 @@ body {
 }
 
 .action-btn-pill:hover {
-  background: rgba(20, 184, 166, 0.3);
-  box-shadow: var(--shadow-glow-teal);
+  background: var(--bg-surface-hover);
+  border-color: var(--border-subtle-active);
+  box-shadow: none;
 }
 
 .urgent-tasks-list {
@@ -710,10 +687,12 @@ body {
 
 /* Custom visibility-focused colors */
 .task-action-btn.start-btn {
-  color: #a78bfa; /* soft violet */
+  color: #a78bfa;
+  /* soft violet */
   border-color: rgba(167, 139, 250, 0.2);
   background: rgba(167, 139, 250, 0.04);
 }
+
 .task-action-btn.start-btn:hover {
   color: #fff;
   background: rgba(167, 139, 250, 0.25);
@@ -723,10 +702,12 @@ body {
 }
 
 .task-action-btn.complete-btn {
-  color: #2dd4bf; /* soft teal */
+  color: #2dd4bf;
+  /* soft teal */
   border-color: rgba(45, 212, 191, 0.2);
   background: rgba(45, 212, 191, 0.04);
 }
+
 .task-action-btn.complete-btn:hover {
   color: #fff;
   background: rgba(45, 212, 191, 0.25);
@@ -736,10 +717,12 @@ body {
 }
 
 .task-action-btn.delete-btn {
-  color: #f87171; /* soft red */
+  color: #f87171;
+  /* soft red */
   border-color: rgba(248, 113, 113, 0.2);
   background: rgba(248, 113, 113, 0.04);
 }
+
 .task-action-btn.delete-btn:hover {
   color: #fff;
   background: rgba(248, 113, 113, 0.25);
@@ -749,10 +732,12 @@ body {
 }
 
 .task-action-btn.back-btn {
-  color: #94a3b8; /* slate/muted */
+  color: #94a3b8;
+  /* slate/muted */
   border-color: rgba(148, 163, 184, 0.2);
   background: rgba(148, 163, 184, 0.04);
 }
+
 .task-action-btn.back-btn:hover {
   color: #fff;
   background: rgba(148, 163, 184, 0.2);
@@ -769,32 +754,32 @@ body {
 }
 
 .input-glass {
-  background: rgba(255, 255, 255, 0.03);
+  background: #0b0c10;
   border: 1px solid var(--border-subtle);
   color: var(--text-main);
   padding: 10px 16px;
-  border-radius: 10px;
+  border-radius: 12px;
   font-family: var(--font-body);
   outline: none;
   transition: var(--transition-smooth);
 }
 
 .input-glass:focus {
-  background: rgba(255, 255, 255, 0.06);
-  border-color: rgba(20, 184, 166, 0.5);
-  box-shadow: 0 0 10px rgba(20, 184, 166, 0.2);
+  background: #0f1115;
+  border-color: var(--accent-blue);
+  box-shadow: none;
 }
 
 .btn-primary {
-  background: var(--grad-teal);
+  background: var(--accent-blue);
   color: #fff;
   border: none;
   padding: 10px 20px;
-  border-radius: 10px;
+  border-radius: 12px;
   font-weight: 600;
   cursor: pointer;
   transition: var(--transition-smooth);
-  box-shadow: var(--shadow-glow-teal);
+  box-shadow: none;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -802,9 +787,9 @@ body {
 }
 
 .btn-primary:hover {
+  background: var(--accent-blue-hover);
   transform: translateY(-1px);
-  filter: brightness(1.08);
-  box-shadow: 0 0 20px rgba(20, 184, 166, 0.5);
+  box-shadow: none;
 }
 
 /* Breathing Break Guide Overlay */
@@ -1323,11 +1308,11 @@ body {
 }
 
 .select-glass {
-  background: rgba(255, 255, 255, 0.03);
+  background: #0b0c10;
   border: 1px solid var(--border-subtle);
   color: var(--text-main);
   padding: 10px;
-  border-radius: 8px;
+  border-radius: 12px;
   font-family: var(--font-body);
   outline: none;
   cursor: pointer;
@@ -1335,8 +1320,8 @@ body {
 }
 
 .select-glass:focus {
-  background: rgba(255, 255, 255, 0.06);
-  border-color: rgba(20, 184, 166, 0.5);
+  background: #0f1115;
+  border-color: var(--accent-blue);
 }
 
 .badge-counter {
@@ -1521,10 +1506,9 @@ body {
   right: 32px;
   width: 48px;
   height: 48px;
-  border-radius: 24px;
-  background: var(--grad-purple);
-  border: 1px solid rgba(167, 139, 250, 0.4);
-  box-shadow: 0 0 15px rgba(139, 92, 246, 0.4);
+  border-radius: 50%;
+  background: #8b5cf6;
+  border: none;
   display: flex;
   align-items: center;
   justify-content: flex-start;
@@ -1532,7 +1516,8 @@ body {
   color: #fff;
   cursor: pointer;
   z-index: 99;
-  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), border-radius 0.3s, box-shadow 0.3s, transform 0.3s;
+  box-shadow: var(--shadow-premium);
+  transition: width 0.3s cubic-bezier(0.16, 1, 0.3, 1), border-radius 0.3s, box-shadow 0.3s, transform 0.3s;
   overflow: hidden;
   white-space: nowrap;
 }
@@ -1540,7 +1525,9 @@ body {
 .voice-coach-trigger:hover {
   width: 145px;
   border-radius: 24px;
-  box-shadow: 0 0 25px rgba(139, 92, 246, 0.6);
+  background: #7c3aed;
+  color: #fff;
+  box-shadow: var(--shadow-premium);
   transform: translateY(-4px);
 }
 
@@ -1673,10 +1660,9 @@ body {
   right: 32px;
   width: 48px;
   height: 48px;
-  border-radius: 24px;
-  background: linear-gradient(135deg, #10b981 0%, #14b8a6 100%);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  box-shadow: 0 0 15px rgba(16, 185, 129, 0.4);
+  border-radius: 50%;
+  background: #10b981;
+  border: none;
   display: flex;
   align-items: center;
   justify-content: flex-start;
@@ -1684,7 +1670,8 @@ body {
   color: #fff;
   cursor: pointer;
   z-index: 99;
-  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), border-radius 0.3s, box-shadow 0.3s, transform 0.3s;
+  box-shadow: var(--shadow-premium);
+  transition: width 0.3s cubic-bezier(0.16, 1, 0.3, 1), border-radius 0.3s, box-shadow 0.3s, transform 0.3s;
   overflow: hidden;
   white-space: nowrap;
 }
@@ -1692,7 +1679,9 @@ body {
 .what-next-trigger:hover {
   width: 145px;
   border-radius: 24px;
-  box-shadow: 0 0 25px rgba(20, 184, 166, 0.6);
+  background: #059669;
+  color: #fff;
+  box-shadow: var(--shadow-premium);
   transform: translateY(-4px);
 }
 
@@ -1789,12 +1778,14 @@ body {
     gap: 16px;
     align-items: start;
   }
+
   .overview-split-left,
   .overview-split-right {
     display: flex;
     flex-direction: column;
     gap: 16px;
   }
+
   /* Wider main content container on large monitors */
   .main-content {
     width: 94vw !important;
@@ -1831,4 +1822,222 @@ body {
   .floating-action-dock {
     display: none !important;
   }
+}
+
+/* ==========================================================================
+   2026 SaaS PREMIUM UI REDESIGN OVERRIDES
+   ========================================================================== */
+
+/* 1. Onboarding Screen Overrides */
+.onboarding-overlay {
+  background: var(--bg-app) !important;
+}
+
+.onboarding-overlay>div {
+  background: var(--bg-surface) !important;
+  border: 1px solid var(--border-subtle) !important;
+  border-radius: 16px !important;
+  box-shadow: var(--shadow-premium) !important;
+}
+
+.onboarding-overlay>div>div:first-child>div:first-child {
+  background: var(--accent-blue) !important;
+  border-radius: 12px !important;
+  box-shadow: none !important;
+}
+
+.onboarding-overlay h1 {
+  background: none !important;
+  -webkit-text-fill-color: initial !important;
+  color: #fff !important;
+}
+
+.onboarding-overlay svg {
+  color: var(--accent-blue) !important;
+}
+
+.onboarding-overlay button.btn-primary {
+  background: var(--accent-blue) !important;
+  color: #fff !important;
+  box-shadow: none !important;
+  border-radius: 12px !important;
+}
+
+.onboarding-overlay button.btn-primary:hover {
+  background: var(--accent-blue-hover) !important;
+}
+
+/* 2. Top Header Brand Overrides */
+.top-header-brand-icon {
+  background: #1c1e24 !important;
+  border-radius: 8px !important;
+  box-shadow: none !important;
+}
+
+.top-header-brand-icon svg {
+  color: var(--accent-blue) !important;
+}
+
+.top-header-brand-text {
+  background: none !important;
+  -webkit-text-fill-color: initial !important;
+  color: #fff !important;
+}
+
+/* 3. Panel Overrides (Cognitive Load, Daily Briefing, Burnout Predictor, Focus, Smart Recovery, etc.) */
+.gamified-card {
+  background: var(--bg-surface) !important;
+  border: 1px solid var(--border-subtle) !important;
+  border-radius: 16px !important;
+}
+
+.gamified-text h3 {
+  color: var(--accent-blue) !important;
+}
+
+.briefing-logo-icon {
+  color: var(--accent-blue) !important;
+}
+
+.briefing-sync-badge {
+  background: rgba(59, 130, 246, 0.1) !important;
+  color: var(--accent-blue) !important;
+}
+
+.glass-panel[style*="rgba(239, 68, 68, 0.04)"],
+.glass-panel[style*="rgba(239, 68, 68, 0.12)"],
+.glass-panel[style*="rgba(20, 184, 166, 0.03)"],
+.glass-panel[style*="rgba(20, 184, 166, 0.05)"],
+.glass-panel[style*="rgba(124, 58, 237, 0.04)"],
+.glass-panel[style*="rgba(139, 92, 246, 0.03)"] {
+  background: var(--bg-surface) !important;
+  border-color: var(--border-subtle) !important;
+  border-radius: 16px !important;
+}
+
+.glass-panel[style*="rgba(239, 68, 68, 0.12)"] {
+  border-color: var(--accent-red) !important;
+}
+
+/* 4. Timeline Suggestion Event Overrides */
+.scheduled-event {
+  background: #151821 !important;
+  border-left: 3px solid var(--accent-blue) !important;
+  border-top: 1px solid var(--border-subtle) !important;
+  border-right: 1px solid var(--border-subtle) !important;
+  border-bottom: 1px solid var(--border-subtle) !important;
+  border-radius: 8px !important;
+}
+
+.scheduled-event:hover {
+  background: #1d212f !important;
+  border-left-color: var(--accent-blue-hover) !important;
+}
+
+/* 5. Progress indicators (Breathing breaks, habits, checklists) */
+.circle-progress {
+  stroke: var(--accent-blue) !important;
+  filter: none !important;
+}
+
+.progress-text {
+  color: #fff !important;
+}
+
+.habit-day-dot.completed {
+  background: var(--accent-blue) !important;
+  border-color: var(--accent-blue) !important;
+  box-shadow: none !important;
+}
+
+.energy-dot-pip.active-teal,
+.energy-dot-pip.active-purple,
+.energy-dot-pip.active-amber {
+  background: var(--accent-blue) !important;
+  box-shadow: none !important;
+}
+
+/* 6. Spacing adjustments */
+.main-content {
+  gap: 32px !important;
+  padding-top: 32px !important;
+  padding-bottom: 120px !important;
+}
+
+.dashboard-grid {
+  gap: 32px !important;
+}
+
+/* 7. Task item overrides */
+.urgent-task-item {
+  border-radius: 12px !important;
+  background: #0b0c10 !important;
+}
+
+.urgent-task-item:hover {
+  background: #101216 !important;
+  border-color: var(--border-subtle-active) !important;
+}
+
+.col-count {
+  border-radius: 6px !important;
+  background: #1c1e24 !important;
+}
+
+.board-col {
+  border-radius: 16px !important;
+  background: #0b0c10 !important;
+}
+
+.task-card {
+  border-radius: 12px !important;
+  background: var(--bg-surface) !important;
+}
+
+.task-card:hover {
+  background: var(--bg-surface-hover) !important;
+  border-color: var(--border-subtle-active) !important;
+  box-shadow: var(--shadow-premium) !important;
+}
+
+/* 8. Text selection inputs & scrollbars */
+.task-action-btn {
+  border-radius: 8px !important;
+}
+
+.task-action-btn.complete-btn {
+  color: var(--accent-blue) !important;
+  border-color: rgba(59, 130, 246, 0.2) !important;
+  background: rgba(59, 130, 246, 0.04) !important;
+}
+
+.task-action-btn.complete-btn:hover {
+  background: rgba(59, 130, 246, 0.25) !important;
+  border-color: rgba(59, 130, 246, 0.4) !important;
+  box-shadow: none !important;
+}
+
+/* 9. Floating Drawers (Mic & Chat Inputs) */
+.chat-drawer-container {
+  background: rgba(8, 9, 11, 0.98) !important;
+  border-left: 1px solid var(--border-subtle) !important;
+}
+
+.message-bubble.user {
+  background: var(--accent-blue) !important;
+  box-shadow: none !important;
+}
+
+.mic-btn.active {
+  background: rgba(239, 68, 68, 0.15) !important;
+  border-color: var(--accent-red) !important;
+  box-shadow: none !important;
+}
+
+.floating-action-dock {
+  background: rgba(8, 9, 11, 0.9) !important;
+  border: 1px solid var(--border-subtle) !important;
+  box-shadow: var(--shadow-premium) !important;
+  bottom: 24px !important;
+  right: 24px !important;
 }

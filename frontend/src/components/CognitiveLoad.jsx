@@ -10,7 +10,19 @@ export default function CognitiveLoad({ data, loading }) {
     );
   }
 
-  if (!data) return null;
+  if (!data) {
+    return (
+      <div className="glass-panel" style={{ padding: '24px' }}>
+        <div className="dashboard-panel-header" style={{ marginBottom: '10px' }}>
+          <h2>Cognitive Load Diagnostic</h2>
+          <BarChart3 style={{ width: '18px', color: 'var(--text-muted)' }} />
+        </div>
+        <div style={{ color: 'var(--text-muted)', fontSize: '13px', textAlign: 'center', padding: '20px 0' }}>
+          No data available. Add tasks to start diagnostic.
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="glass-panel" style={{ padding: '24px' }}>

@@ -130,7 +130,7 @@ export const generateHeuristicReschedule = (tasks, events, selectedDate, current
 };
 
 export const parseHeuristicRecovery = (tasks = [], events = [], missedTaskName) => {
-  const missedTitle = missedTaskName || "React Revision";
+  const missedTitle = missedTaskName || "Architecture Review";
   const match = tasks.find(t => t.title.toLowerCase() === missedTitle.toLowerCase()) || tasks[0];
   const missedTaskId = match ? match.id : "missed_task_id";
 
@@ -138,7 +138,7 @@ export const parseHeuristicRecovery = (tasks = [], events = [], missedTaskName) 
   tomorrow.setDate(tomorrow.getDate() + 1);
   const tomorrowStr = formatDateStr(tomorrow);
 
-  const adjustMatch = tasks.find(t => t.title.toLowerCase().includes("reading") || t.title.toLowerCase().includes("revision") || t.id !== missedTaskId);
+  const adjustMatch = tasks.find(t => t.title.toLowerCase().includes("reading") || t.title.toLowerCase().includes("review") || t.id !== missedTaskId);
   const adjustTaskId = adjustMatch ? adjustMatch.id : "adjust_task_id";
   const adjustTitle = adjustMatch ? adjustMatch.title : "Reading Session";
 
@@ -148,7 +148,7 @@ export const parseHeuristicRecovery = (tasks = [], events = [], missedTaskName) 
     adjustments: [
       "Tomorrow 7 PM.",
       `Move ${adjustTitle}.`,
-      "Preserve interview preparation."
+      "Preserve project deployment prep."
     ],
     timelineUpdates: [
       {
@@ -172,19 +172,19 @@ export const parseHeuristicEstimate = (title, description = "") => {
   let complexity = "Low";
   let cognitiveLoad = 2;
 
-  if (combined.includes("deploy") || combined.includes("cloud run") || combined.includes("production")) {
+  if (combined.includes("deploy") || combined.includes("deployment") || combined.includes("production") || combined.includes("infrastructure")) {
     estimatedMinutes = 60;
     complexity = "High";
     cognitiveLoad = 4;
-  } else if (combined.includes("react hooks") || combined.includes("learn react") || combined.includes("exam")) {
+  } else if (combined.includes("exam") || combined.includes("test") || combined.includes("certification") || combined.includes("study") || combined.includes("learn")) {
     estimatedMinutes = 120;
     complexity = "Medium";
     cognitiveLoad = 4;
-  } else if (combined.includes("interview") || combined.includes("broadridge")) {
+  } else if (combined.includes("review") || combined.includes("architecture") || combined.includes("presentation")) {
     estimatedMinutes = 90;
     complexity = "Medium";
-    cognitiveLoad = 4;
-  } else if (combined.includes("gym") || combined.includes("workout")) {
+    cognitiveLoad = 3;
+  } else if (combined.includes("gym") || combined.includes("workout") || combined.includes("exercise") || combined.includes("breathing")) {
     estimatedMinutes = 45;
     complexity = "Low";
     cognitiveLoad = 1;

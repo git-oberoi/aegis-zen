@@ -10,15 +10,21 @@ export default function DailyBriefing({ data, loading, onBeginAction }) {
     );
   }
 
-  if (!data) return null;
+  if (!data) {
+    return (
+      <div className="glass-panel" style={{ padding: '24px', textAlign: 'center', color: 'var(--text-muted)' }}>
+        No morning briefing generated yet. Please schedule some tasks or enter Demo Mode to explore.
+      </div>
+    );
+  }
 
   return (
-    <div className="glass-panel" style={{ padding: '24px', background: 'linear-gradient(135deg, rgba(20, 184, 166, 0.05) 0%, rgba(124, 58, 237, 0.02) 100%)', borderColor: 'rgba(20, 184, 166, 0.25)', display: 'flex', flexDirection: 'column', gap: '14px' }}>
+    <div className="glass-panel daily-briefing-panel" style={{ padding: '24px', background: 'linear-gradient(135deg, rgba(20, 184, 166, 0.05) 0%, rgba(124, 58, 237, 0.02) 100%)', borderColor: 'rgba(20, 184, 166, 0.25)', display: 'flex', flexDirection: 'column', gap: '14px' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <h2 style={{ fontSize: '18px', fontWeight: 800, fontFamily: 'var(--font-title)', color: '#fff', display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <Wind style={{ color: '#2dd4bf', width: '20px' }} /> Aegis Daily Briefing
+          <Wind className="briefing-logo-icon" style={{ color: '#2dd4bf', width: '20px' }} /> Aegis Daily Briefing
         </h2>
-        <span style={{ fontSize: '10px', textTransform: 'uppercase', background: 'rgba(20, 184, 166, 0.15)', color: '#2dd4bf', padding: '3px 8px', borderRadius: '6px', fontWeight: 'bold' }}>
+        <span className="briefing-sync-badge" style={{ fontSize: '10px', textTransform: 'uppercase', background: 'rgba(20, 184, 166, 0.15)', color: '#2dd4bf', padding: '3px 8px', borderRadius: '6px', fontWeight: 'bold' }}>
           Morning Sync
         </span>
       </div>

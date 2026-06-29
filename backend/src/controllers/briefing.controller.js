@@ -2,8 +2,8 @@ import { resolveApiKey } from '../services/gemini.service.js';
 import { generateDailyBriefing } from '../services/briefing.service.js';
 
 export const dailyBriefing = async (req, res) => {
-  const { tasks, habits, history, selectedDate } = req.body;
+  const { tasks, habits, history, selectedDate, username } = req.body;
   const apiKey = resolveApiKey(req);
-  const result = await generateDailyBriefing({ tasks, habits, history, selectedDate, apiKey });
+  const result = await generateDailyBriefing({ tasks, habits, history, selectedDate, apiKey, username });
   res.json(result);
 };

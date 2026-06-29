@@ -69,20 +69,20 @@ export const parseHeuristicBrainDump = (text, currentDate) => {
   const july2Match = lowerText.includes("july 2");
   const june30Match = lowerText.includes("june 30");
 
-  if (lowerText.includes("react exam") || lowerText.includes("exam")) {
+  if (lowerText.includes("integration test") || lowerText.includes("exam") || lowerText.includes("test")) {
     const d = july2Match ? "2026-07-02" : formatDateStr(new Date(Date.now() + 172800000));
-    tasks.push({ title: "Revise React concepts for React Exam", priority: "high", category: "Study", dueDate: d, duration: 180, cognitiveLoad: 5 });
-    deadlines.push({ title: "React Exam Target Date", date: d });
+    tasks.push({ title: "Revise system integration test concepts", priority: "high", category: "Study", dueDate: d, duration: 180, cognitiveLoad: 5 });
+    deadlines.push({ title: "Integration Test Target Date", date: d });
   }
 
-  if (lowerText.includes("hackathon")) {
+  if (lowerText.includes("hackathon") || lowerText.includes("deployment") || lowerText.includes("publish")) {
     const d = june30Match ? "2026-06-30" : formatDateStr(new Date(Date.now() + 86400000));
-    tasks.push({ title: "Complete Hackathon project submission setup", priority: "high", category: "Work", dueDate: d, duration: 120, cognitiveLoad: 4 });
-    deadlines.push({ title: "Hackathon Submission Deadline", date: d });
+    tasks.push({ title: "Complete project deployment setup", priority: "high", category: "Work", dueDate: d, duration: 120, cognitiveLoad: 4 });
+    deadlines.push({ title: "Project Deployment Deadline", date: d });
   }
 
-  if (lowerText.includes("broadridge") || lowerText.includes("interview")) {
-    tasks.push({ title: "Prepare Broadridge interview slides and study profiles", priority: "high", category: "Study", dueDate: broadridgeDate, duration: 90, cognitiveLoad: 4 });
+  if (lowerText.includes("review") || lowerText.includes("architecture") || lowerText.includes("presentation")) {
+    tasks.push({ title: "Prepare architecture review slides", priority: "high", category: "Study", dueDate: broadridgeDate, duration: 90, cognitiveLoad: 4 });
   }
 
   if (lowerText.includes("gym") || lowerText.includes("workout") || lowerText.includes("exercise")) {
@@ -141,10 +141,10 @@ export const parseHeuristicWeeklyOptimization = (tasks = [], habits = [], goals 
   const activeTasks = tasks.filter(t => t.status !== 'completed');
 
   const focusList = activeTasks.filter(t => t.priority === 'high' || (t.cognitiveLoad || 3) >= 4).map(t => t.title);
-  if (focusList.length === 0) focusList.push("Prepare for Broadridge Interview.", "Complete Hackathon deployment setup.");
+  if (focusList.length === 0) focusList.push("Prepare for architecture review.", "Complete project deployment setup.");
 
   const postponeList = activeTasks.filter(t => t.priority === 'medium' && (t.cognitiveLoad || 3) < 4).map(t => t.title);
-  if (postponeList.length === 0) postponeList.push("Review old React code bases.", "Organize project desktop folder.");
+  if (postponeList.length === 0) postponeList.push("Clean legacy repository branches.", "Organize project desktop folder.");
 
   const ignoreList = activeTasks.filter(t => t.priority === 'low').map(t => t.title);
   if (ignoreList.length === 0) ignoreList.push("Answer non-urgent cold emails.", "Sort clutter in storage drawers.");
@@ -159,16 +159,16 @@ export const parseHeuristicWeeklyOptimization = (tasks = [], habits = [], goals 
   };
 };
 
-export const parseHeuristicBriefing = (tasks = [], habits = [], history = []) => {
+export const parseHeuristicBriefing = (tasks = [], habits = [], history = [], username = 'Ninjas') => {
   const totalTasks = tasks.length;
   const completedTasks = tasks.filter(t => t.status === 'completed').length;
-  const greeting = "Good Morning Shivam.";
+  const greeting = `Good Morning ${username || 'Ninjas'}.`;
   const performanceSummary = totalTasks > 0
-    ? `You completed ${completedTasks} of ${totalTasks} tasks yesterday.`
-    : "You completed 4 of 6 tasks yesterday.";
+    ? `You completed ${completedTasks} of ${totalTasks} tasks recently.`
+    : "You completed 4 of 6 tasks recently.";
   const urgent = tasks.find(t => t.priority === 'high' && t.status !== 'completed');
-  const todayRisk = urgent ? `${urgent.title}.` : "Hackathon deployment.";
-  const firstAction = urgent ? `${urgent.title}.` : "Complete deployment setup.";
-  const mindfulMessage = "Workload: Moderate\nRisk: Deployment setup remains unfinished.\nRecommendation: Complete deployment before 7 PM. Estimated effort: 45 minutes.\nCompletion probability increases by 18%.";
+  const todayRisk = urgent ? `${urgent.title}.` : "Project delivery milestones.";
+  const firstAction = urgent ? `${urgent.title}.` : "Finalize core project features.";
+  const mindfulMessage = "Workload: Moderate\nRisk: Project delivery milestones remain unfinished.\nRecommendation: Finalize core features before 7 PM. Estimated effort: 45 minutes.\nCompletion probability increases by 18%.";
   return { greeting, performanceSummary, todayRisk, firstAction, mindfulMessage };
 };
