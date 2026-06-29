@@ -60,6 +60,28 @@ export const DEMO_TASKS = [
     status: 'todo',
     cognitiveLoad: 2,
     subtasks: []
+  },
+  {
+    id: 'task_demo_5',
+    title: 'Verify system integration test concepts',
+    priority: 'high',
+    category: 'Work',
+    dueDate: formatDateStr(new Date()),
+    duration: 90,
+    status: 'todo',
+    cognitiveLoad: 4,
+    subtasks: []
+  },
+  {
+    id: 'task_demo_6',
+    title: 'Prepare slides for technical architecture review',
+    priority: 'medium',
+    category: 'Study',
+    dueDate: formatDateStr(new Date()),
+    duration: 45,
+    status: 'todo',
+    cognitiveLoad: 3,
+    subtasks: []
   }
 ];
 

@@ -100,7 +100,7 @@ function App() {
   const [events, setEvents] = useState([]);
   const [habits, setHabits] = useState([]);
 
-  const isInitialized = useRef(false);
+  const [isInitialized, setIsInitialized] = useState(false);
 
   // Sync workspace data based on Demo Mode / User Mode
   useEffect(() => {
@@ -109,8 +109,37 @@ function App() {
       const savedTasks = localStorage.getItem('demo_tasks');
       const savedEvents = localStorage.getItem('demo_events');
       const savedHabits = localStorage.getItem('demo_habits');
-      setTasks(savedTasks ? JSON.parse(savedTasks) : DEMO_TASKS);
-      setEvents(savedEvents ? JSON.parse(savedEvents) : DEMO_EVENTS);
+      
+      let parsedTasks = savedTasks ? JSON.parse(savedTasks) : DEMO_TASKS;
+      let parsedEvents = savedEvents ? JSON.parse(savedEvents) : DEMO_EVENTS;
+      
+      // Dynamically align demo dates to today's date so Today's Focus and calendar timelines are never outdated
+      const todayStr = formatDateStr(new Date());
+      const tomorrowStr = formatDateStr(new Date(Date.now() + 86400000));
+      
+      parsedTasks = parsedTasks.map(t => {
+        if (t.id && t.id.startsWith('task_demo_')) {
+          return {
+            ...t,
+            dueDate: t.id === 'task_demo_2' ? tomorrowStr : todayStr
+          };
+        }
+        return t;
+      });
+      
+      parsedEvents = parsedEvents.map(e => {
+        if (e.id && e.id.startsWith('event_demo_')) {
+          const timePart = e.startTime.split('T')[1] || '12:00:00';
+          return {
+            ...e,
+            startTime: `${todayStr}T${timePart}`
+          };
+        }
+        return e;
+      });
+      
+      setTasks(parsedTasks);
+      setEvents(parsedEvents);
       setHabits(savedHabits ? JSON.parse(savedHabits) : DEMO_HABITS);
       setUsername(DEMO_USERNAME);
     } else {
@@ -123,12 +152,12 @@ function App() {
       setHabits(savedHabits ? JSON.parse(savedHabits) : INITIAL_USER_HABITS);
       setUsername(savedUsername || INITIAL_USER_USERNAME);
     }
-    isInitialized.current = true;
+    setIsInitialized(true);
   }, [isDemoMode]);
 
   // Persist states to appropriate local storage namespaces
   useEffect(() => {
-    if (!isInitialized.current) return;
+    if (!isInitialized) return;
     if (isDemoMode) {
       localStorage.setItem('demo_tasks', JSON.stringify(tasks));
     } else {
@@ -137,25 +166,25 @@ function App() {
         localStorage.setItem('aegis_user_exists', 'true');
       }
     }
-  }, [tasks, isDemoMode]);
+  }, [tasks, isDemoMode, isInitialized]);
 
   useEffect(() => {
-    if (!isInitialized.current) return;
+    if (!isInitialized) return;
     if (isDemoMode) {
       localStorage.setItem('demo_events', JSON.stringify(events));
     } else {
       localStorage.setItem('user_events', JSON.stringify(events));
     }
-  }, [events, isDemoMode]);
+  }, [events, isDemoMode, isInitialized]);
 
   useEffect(() => {
-    if (!isInitialized.current) return;
+    if (!isInitialized) return;
     if (isDemoMode) {
       localStorage.setItem('demo_habits', JSON.stringify(habits));
     } else {
       localStorage.setItem('user_habits', JSON.stringify(habits));
     }
-  }, [habits, isDemoMode]);
+  }, [habits, isDemoMode, isInitialized]);
 
   const loadDemoModeData = () => {
     localStorage.setItem('demo_tasks', JSON.stringify(DEMO_TASKS));
@@ -514,7 +543,9 @@ function App() {
         explanation: 'Your schedule shows a moderate cognitive load of 45/100. This is balanced, but you should take micro-breaks between your tasks.',
         recommendations: [
           'Take a breathing break after finishing your landing page redesign.',
-          'Review AI task duration recommendations.'
+          'Review AI task duration recommendations.',
+          'Schedule 1-minute box breathing pauses between system test reviews.',
+          'Focus today\'s calendar budget on high-priority items.'
         ]
       });
       setCogLoadLoading(false);

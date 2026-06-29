@@ -14,8 +14,10 @@ export default function CognitiveLoad({ data, loading }) {
     return (
       <div className="glass-panel" style={{ padding: '24px' }}>
         <div className="dashboard-panel-header" style={{ marginBottom: '10px' }}>
-          <h2>Cognitive Load Diagnostic</h2>
-          <BarChart3 style={{ width: '18px', color: 'var(--text-muted)' }} />
+          <h2 style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <BarChart3 style={{ width: '18px', color: 'var(--text-muted)' }} />
+            Cognitive Load Diagnostic
+          </h2>
         </div>
         <div style={{ color: 'var(--text-muted)', fontSize: '13px', textAlign: 'center', padding: '20px 0' }}>
           No data available. Add tasks to start diagnostic.
@@ -27,8 +29,10 @@ export default function CognitiveLoad({ data, loading }) {
   return (
     <div className="glass-panel" style={{ padding: '24px' }}>
       <div className="dashboard-panel-header" style={{ marginBottom: '10px' }}>
-        <h2>Cognitive Load Diagnostic</h2>
-        <BarChart3 style={{ width: '18px', color: '#2dd4bf' }} />
+        <h2 style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <BarChart3 style={{ width: '18px', color: 'var(--accent-blue)' }} />
+          Cognitive Load Diagnostic
+        </h2>
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
