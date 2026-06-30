@@ -31,10 +31,3 @@ export const generateStructuredResponse = async ({ prompt, schema, apiKey }) => 
   return JSON.parse(responseText);
 };
 
-/**
- * Read the Gemini API key from the request headers or environment variable.
- * @param {object} req - Express request object
- * @returns {string}
- */
-export const resolveApiKey = (req) =>
-  req.headers['x-gemini-key'] || process.env.GEMINI_API_KEY || '';

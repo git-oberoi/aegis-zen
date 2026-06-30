@@ -12,6 +12,8 @@
     "start": "node backend/server.js"
   },
   "dependencies": {
-    "all": "^0.0.0"
+    "all": "^0.0.0",
+    "mongodb": "^7.4.0",
+    "mongoose": "^9.7.3"
   }
 }
