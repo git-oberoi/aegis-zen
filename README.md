@@ -1,3 +1,4 @@
+# App Link : https://aegis-zen-app-571223675384.us-central1.run.app/
 # 🛡️ Aegis Zen — AI-Powered Productivity Guardian & Burnout Prevention Sanctuary
 
 > **Aegis Zen** is a next-generation personal productivity sanctuary designed to protect cognitive bandwidth, automate recovery replanning, and prevent burnout. Combining a serene, glassmorphic user experience with advanced generative AI, it helps knowledge workers structure their day around a strict energy budget and recover gracefully when life gets in the way.
